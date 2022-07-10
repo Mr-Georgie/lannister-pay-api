@@ -5,24 +5,30 @@
  */
 
 // Step1
-const getFlatTypes = (transObj) => {
-  let flatTypes = transObj.SplitInfo.filter((obj) => obj.SplitType === "FLAT");
+const groupSplitTypes = (transObj) => {
+  let flatTypes = [];
+  let percentTypes = [];
+  let ratioTypes = [];
 
-  return { ...transObj, SplitInfo: flatTypes };
-};
+  for (let index = 0; index < transObj.SplitInfo.length; ++index) {
+    if (transObj.SplitInfo[index].SplitType === "FLAT") {
+      flatTypes.push(transObj.SplitInfo[index]);
+    } else if (transObj.SplitInfo[index].SplitType === "PERCENTAGE") {
+      percentTypes.push(transObj.SplitInfo[index]);
+    } else {
+      ratioTypes.push(transObj.SplitInfo[index]);
+    }
+  }
 
-const getPercentTypes = (transObj) => {
-  let flatTypes = transObj.SplitInfo.filter(
-    (obj) => obj.SplitType === "PERCENTAGE"
-  );
+  const transObjWithFlatTypes = { ...transObj, SplitInfo: flatTypes };
+  const transObjWithPercentTypes = { ...transObj, SplitInfo: percentTypes };
+  const transObjWithRatioTypes = { ...transObj, SplitInfo: ratioTypes };
 
-  return { ...transObj, SplitInfo: flatTypes };
-};
-
-const getRatioTypes = (transObj) => {
-  let flatTypes = transObj.SplitInfo.filter((obj) => obj.SplitType === "RATIO");
-
-  return { ...transObj, SplitInfo: flatTypes };
+  return {
+    transObjWithFlatTypes,
+    transObjWithPercentTypes,
+    transObjWithRatioTypes,
+  };
 };
 
 const getTotalRatio = (ratioTypeObj) => {
@@ -32,15 +38,21 @@ const getTotalRatio = (ratioTypeObj) => {
     total += element.SplitValue;
   });
 
+  // for (let index = 0; index < ratioTypeObj.SplitInfo.length; ++index) {
+  //   total += ratioTypeObj.SplitInfo[index].SplitValue;
+  // }
+
   return total;
 };
 
 // Step 2
 exports.computeTransaction = (transObj) => {
   // get the filtered transaction objects by their type
-  const transObjWithFlatTypes = getFlatTypes(transObj);
-  const transObjWithPercentTypes = getPercentTypes(transObj);
-  const transObjWithRatioTypes = getRatioTypes(transObj);
+  const {
+    transObjWithFlatTypes,
+    transObjWithPercentTypes,
+    transObjWithRatioTypes,
+  } = groupSplitTypes(transObj);
 
   // get total ratio from transaction objects with ratio types
   const sumTotalRatio = getTotalRatio(transObjWithRatioTypes);
@@ -52,41 +64,53 @@ exports.computeTransaction = (transObj) => {
   const allSplitBreakdowns = [];
 
   // computation for flat types
-  transObjWithFlatTypes.SplitInfo.forEach((element) => {
+  for (let index = 0; index < transObjWithFlatTypes.SplitInfo.length; ++index) {
     let splitBreakdown = {}; // will hold individual split breakdown
-    balance -= element.SplitValue;
-    splitBreakdown.SplitEntityId = element.SplitEntityId;
-    splitBreakdown.Amount = element.SplitValue;
+    balance -= transObjWithFlatTypes.SplitInfo[index].SplitValue;
+    splitBreakdown.SplitEntityId =
+      transObjWithFlatTypes.SplitInfo[index].SplitEntityId;
+    splitBreakdown.Amount = transObjWithFlatTypes.SplitInfo[index].SplitValue;
     // save individual split breakdown to all split breakdowns
     allSplitBreakdowns.push(splitBreakdown);
-  });
+  }
 
   // computation for percent types
-  transObjWithPercentTypes.SplitInfo.forEach((element) => {
+  for (
+    let index = 0;
+    index < transObjWithPercentTypes.SplitInfo.length;
+    ++index
+  ) {
     let splitBreakdown = {}; // will hold individual split breakdown
-    let percent = element.SplitValue / 100;
+    let percent = transObjWithPercentTypes.SplitInfo[index].SplitValue / 100;
     splitAmount = balance * percent;
     balance -= splitAmount;
-    splitBreakdown.SplitEntityId = element.SplitEntityId;
+    splitBreakdown.SplitEntityId =
+      transObjWithPercentTypes.SplitInfo[index].SplitEntityId;
     splitBreakdown.Amount = splitAmount;
     // save individual split breakdown to all split breakdowns
     allSplitBreakdowns.push(splitBreakdown);
-  });
+  }
 
   // opening ratio balance which will be used to find the split amounts for all ratio
   const openingRatioBalance = balance;
 
   // computation for ratio types
-  transObjWithRatioTypes.SplitInfo.forEach((element) => {
+  for (
+    let index = 0;
+    index < transObjWithRatioTypes.SplitInfo.length;
+    ++index
+  ) {
     let splitBreakdown = {}; // will hold individual split breakdown
     let splitAmount =
-      (element.SplitValue / sumTotalRatio) * openingRatioBalance;
+      (transObjWithRatioTypes.SplitInfo[index].SplitValue / sumTotalRatio) *
+      openingRatioBalance;
     balance -= splitAmount;
-    splitBreakdown.SplitEntityId = element.SplitEntityId;
+    splitBreakdown.SplitEntityId =
+      transObjWithRatioTypes.SplitInfo[index].SplitEntityId;
     splitBreakdown.Amount = splitAmount;
     // save individual split breakdown to all split breakdowns
     allSplitBreakdowns.push(splitBreakdown);
-  });
+  }
 
   // compiling computations into computed object
   const computedObj = {};

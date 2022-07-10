@@ -2,9 +2,9 @@ exports.checkSplitAmount = (transObj, SplitBreakdown) => {
   let sumSplitAmount = 0; // will hold the sum of split amount from computed objected
 
   // this will sum all split amount
-  SplitBreakdown.forEach((element) => {
-    sumSplitAmount += element.Amount;
-  });
+  for (let index = 0; index < SplitBreakdown.length; ++index) {
+    sumSplitAmount += SplitBreakdown[index].Amount;
+  }
 
   // this will hold error message that will be returned if any
   const error = {};
