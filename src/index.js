@@ -28,7 +28,6 @@ app.get("/", (req, res) => {
 app.post("/split-payments/compute", (req, res) => {
   console.log("==================");
   console.time("Speed Test");
-  console.log("==================");
 
   // console.time("validate took: ");
   // first constraint check if there is at least 1 entity in split info array
@@ -73,10 +72,10 @@ app.post("/split-payments/compute", (req, res) => {
     return;
   }
 
-  console.timeEnd("Speed Test");
-
   // if all check is passed without error, respond with computed object
   res.status(200).send(computedObj);
+
+  console.timeEnd("Speed Test");
 });
 
 // starting the server
