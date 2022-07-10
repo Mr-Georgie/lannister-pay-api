@@ -1,40 +1,42 @@
 exports.checkSplitAmount = (transObj, SplitBreakdown) => {
-  let sumSplitAmount = 0;
+  let sumSplitAmount = 0; // will hold the sum of split amount from computed objected
 
+  // this will sum all split amount
   SplitBreakdown.forEach((element) => {
     sumSplitAmount += element.Amount;
   });
+
+  // this will hold error message that will be returned if any
   const error = {};
 
-  const checkOne = SplitBreakdown.every((element, index) => {
-    // check whether element passes condition
-    // if passed return true, if fails return false
+  // Check 1: If split amount is greater than transaction amount
+  const checkOne = SplitBreakdown.every((element) => {
+    // will return true or false based on condition
     return element.Amount < transObj.Amount;
   });
 
   if (!checkOne) {
-    error.message =
-      "Oops! There is a computational error. Split amount is greater than transaction amount. Check console";
+    error.message = "Oops! Split amount is greater than transaction amount.";
     return { error };
   }
 
-  const checkTwo = SplitBreakdown.every((element, index) => {
-    // check whether element passes condition
-    // if passed return true, if fails return false
+  // Check 2: If split amount is less than 0
+  const checkTwo = SplitBreakdown.every((element) => {
+    // will return true or false based on condition
     return element.Amount >= 0;
   });
 
   if (!checkTwo) {
-    error.message =
-      "Oops! There is a computational error. Split amount is less than 0. Check console";
+    error.message = "Oops! Split amount is less than 0.";
     return { error };
   }
 
+  // Check 3: If sum of Split amount is greater than transaction amount
   const checkThree = () => sumSplitAmount > transObj.Amount;
 
   if (checkThree()) {
     error.message =
-      "Oops! There is a computational error. Sum of Split amount is greater than transaction amount. Check console";
+      "Oops! Sum of Split amount is greater than transaction amount.";
     return { error };
   }
 

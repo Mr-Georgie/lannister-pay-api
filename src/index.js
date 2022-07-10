@@ -34,41 +34,39 @@ app.get("/", (req, res) => {
 
 //CREATE Request Handler
 app.post("/split-payments/compute", (req, res) => {
-  // first constraint check
+  // first constraint check if there is at least 1 entity in split info array
   const { error: userInputError } = validateTransaction(req.body);
-
-  // console.log("error? ", userInputError);
 
   if (userInputError.message) {
     res.status(400).send(userInputError.message);
     return;
   }
 
-  const { computedObj } = computeTransaction(req.body);
+  const { computedObj } = computeTransaction(req.body); // get the computed object
 
-  // 3rd, 4th and 5th constraint check
-  const { error: splitAmountError } = checkSplitAmount(
-    req.body,
-    computedObj.SplitBreakdown
-  );
-
-  // console.log("error? ", splitAmountError);
-
-  if (splitAmountError.message) {
-    res.status(400).send(splitAmountError.message);
-    return;
-  }
-
-  // second constraint check
+  // second constraint check if final balance is less than zero
   const { error: finalBalanceError } = checkFinalBalance(computedObj);
-
-  // console.log("error? ", finalBalanceError);
 
   if (finalBalanceError.message) {
     res.status(400).send(finalBalanceError.message);
     return;
   }
 
+  // 3rd, 4th and 5th constraint check if split amount is:
+  // greater than transaction amount
+  // lesser than 0
+  // sum of split amount is greater than transaction amount
+  const { error: splitAmountError } = checkSplitAmount(
+    req.body,
+    computedObj.SplitBreakdown
+  );
+
+  if (splitAmountError.message) {
+    res.status(400).send(splitAmountError.message);
+    return;
+  }
+
+  // if all check is passed without error, respond with computed object
   res.status(200).send(computedObj);
 });
 
