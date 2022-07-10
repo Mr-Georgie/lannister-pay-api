@@ -26,4 +26,4 @@ npm start
 
 ## Link to live API
 
-[https://moviee-library.netlify.app/](https://moviee-library.netlify.app/)
+[https://lannister-pay-tpss-api.herokuapp.com/](https://lannister-pay-tpss-api.herokuapp.com/)

@@ -27,7 +27,9 @@ const { computeTransaction } = require("./helpers/computeTransactions");
 
 // defining an endpoint to return all ads
 app.get("/", (req, res) => {
-  res.send("Hi there!");
+  res.send(
+    "Hi there! To use this service, please send a post request to '/split-payments/compute' with a transaction object as body"
+  );
 });
 
 //CREATE Request Handler
