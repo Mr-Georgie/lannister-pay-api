@@ -36,15 +36,7 @@ app.post("/split-payments/compute", (req, res) => {
 
   const { computedObj } = computeTransaction(req.body); // get the computed object
 
-  // second constraint check if final balance is less than zero
-  const { error: finalBalanceError } = checkFinalBalance(computedObj);
-
-  if (finalBalanceError.message) {
-    res.status(400).send(finalBalanceError.message);
-    return;
-  }
-
-  // 3rd, 4th and 5th constraint check if split amount is:
+  // check if split amount is:
   // greater than transaction amount
   // lesser than 0
   // sum of split amount is greater than transaction amount
@@ -55,6 +47,14 @@ app.post("/split-payments/compute", (req, res) => {
 
   if (splitAmountError.message) {
     res.status(400).send(splitAmountError.message);
+    return;
+  }
+
+  // check if final balance is less than zero
+  const { error: finalBalanceError } = checkFinalBalance(computedObj);
+
+  if (finalBalanceError.message) {
+    res.status(400).send(finalBalanceError.message);
     return;
   }
 
