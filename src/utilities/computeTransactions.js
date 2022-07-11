@@ -1,5 +1,5 @@
 /**
- * Step 1: group transactionobject by type
+ * Step 1: group transaction object by type
  * Step 2: compute the transaction starting from FLAT to PERCENTAGE to RATIO
  * Step 3: compile all computations into one object
  */
@@ -10,7 +10,9 @@ const groupSplitTypes = (transObj) => {
   let percentTypes = [];
   let ratioTypes = [];
 
-  for (let index = 0; index < transObj.SplitInfo.length; ++index) {
+  const lengthOfSplitInfo = transObj.SplitInfo.length;
+
+  for (let index = 0; index < lengthOfSplitInfo; ++index) {
     if (transObj.SplitInfo[index].SplitType === "FLAT") {
       flatTypes.push(transObj.SplitInfo[index]);
     } else if (transObj.SplitInfo[index].SplitType === "PERCENTAGE") {
@@ -20,15 +22,11 @@ const groupSplitTypes = (transObj) => {
     }
   }
 
-  const transObjWithFlatTypes = { ...transObj, SplitInfo: flatTypes };
-  const transObjWithPercentTypes = { ...transObj, SplitInfo: percentTypes };
-  const transObjWithRatioTypes = { ...transObj, SplitInfo: ratioTypes };
-
-  return {
-    transObjWithFlatTypes,
-    transObjWithPercentTypes,
-    transObjWithRatioTypes,
-  };
+  return [
+    { ...transObj, SplitInfo: flatTypes }, //transObjWithFlatTypes
+    { ...transObj, SplitInfo: percentTypes }, //transObjWithPercentTypes,
+    { ...transObj, SplitInfo: ratioTypes }, //transObjWithRatioTypes,
+  ];
 };
 
 const getTotalRatio = (ratioTypeObj) => {
@@ -48,11 +46,11 @@ const getTotalRatio = (ratioTypeObj) => {
 // Step 2
 exports.computeTransaction = (transObj) => {
   // get the filtered transaction objects by their type
-  const {
+  const [
     transObjWithFlatTypes,
     transObjWithPercentTypes,
     transObjWithRatioTypes,
-  } = groupSplitTypes(transObj);
+  ] = groupSplitTypes(transObj);
 
   // get total ratio from transaction objects with ratio types
   const sumTotalRatio = getTotalRatio(transObjWithRatioTypes);
