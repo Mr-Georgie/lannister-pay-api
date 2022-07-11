@@ -1,1 +1,1 @@
-web: node src
+web: npx nodemon src
